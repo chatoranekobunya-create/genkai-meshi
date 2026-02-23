@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>限界原稿メシガチャ｜修羅場の配給所</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --yellow: #FFD700;
+    --warn: #FF6B00;
+    --danger: #FF2020;
+    --bg: #0a0a0a;
+    --panel: #141414;
+    --border: #2a2a2a;
+    --text: #e0e0e0;
+    --muted: #666;
+  }
+
+- { box-sizing: border-box; }
+
+body {
+background-color: var(–bg);
+color: var(–text);
+font-family: ‘Noto Sans JP’, sans-serif;
+min-height: 100vh;
+overflow-x: hidden;
+position: relative;
+}
+
+/* Scanline overlay */
+body::before {
+content: ‘’;
+position: fixed;
+inset: 0;
+background: repeating-linear-gradient(
+0deg,
+transparent,
+transparent 2px,
+rgba(0,0,0,0.15) 2px,
+rgba(0,0,0,0.15) 4px
+);
+pointer-events: none;
+z-index: 100;
+}
+
+/* Hazard stripe border */
+.hazard-border {
+background: repeating-linear-gradient(
+-45deg,
+var(–yellow),
+var(–yellow) 10px,
+#1a1a00 10px,
+#1a1a00 20px
+);
+padding: 4px;
+}
+
+.hazard-border-inner {
+background: var(–panel);
+padding: 1.5rem;
+}
+
+/* Glitch text effect */
+.glitch {
+position: relative;
+animation: glitch-skew 3s infinite linear alternate-reverse;
+}
+.glitch::before,
+.glitch::after {
+content: attr(data-text);
+position: absolute;
+left: 0; top: 0;
+width: 100%; height: 100%;
+}
+.glitch::before {
+color: #FF2020;
+animation: glitch-anim 2s infinite linear alternate-reverse;
+clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
+transform: translate(-2px, 0);
+}
+.glitch::after {
+color: #00FFFF;
+animation: glitch-anim2 2.5s infinite linear alternate-reverse;
+clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
+transform: translate(2px, 0);
+}
+
+@keyframes glitch-anim {
+0% { transform: translate(-2px, 0); }
+20% { transform: translate(2px, 0); }
+40% { transform: translate(-1px, 1px); }
+60% { transform: translate(1px, -1px); }
+80% { transform: translate(0, 0); }
+100% { transform: translate(-2px, 0); }
+}
+@keyframes glitch-anim2 {
+0% { transform: translate(2px, 0); }
+20% { transform: translate(-2px, 0); }
+60% { transform: translate(1px, 1px); }
+80% { transform: translate(-1px, -1px); }
+100% { transform: translate(2px, 0); }
+}
+@keyframes glitch-skew {
+0% { transform: skew(0deg); }
+85% { transform: skew(0deg); }
+90% { transform: skew(-1deg); }
+95% { transform: skew(1deg); }
+100% { transform: skew(0deg); }
+}
+
+/* Blink animation */
+@keyframes blink {
+0%, 100% { opacity: 1; }
+50% { opacity: 0; }
+}
+.blink { animation: blink 1s step-end infinite; }
+
+/* Pulse warning */
+@keyframes pulse-warn {
+0%, 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4); }
+50% { box-shadow: 0 0 0 12px rgba(255, 215, 0, 0); }
+}
+
+/* Main button */
+.main-btn {
+background: var(–yellow);
+color: #000;
+font-family: ‘Noto Sans JP’, sans-serif;
+font-weight: 900;
+font-size: 1.1rem;
+border: none;
+cursor: pointer;
+padding: 1.2rem 2rem;
+width: 100%;
+max-width: 400px;
+position: relative;
+clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+transition: all 0.15s;
+letter-spacing: 0.05em;
+animation: pulse-warn 2s infinite;
+}
+.main-btn:hover {
+background: #fff;
+transform: scale(1.03);
+}
+.main-btn:active {
+transform: scale(0.97);
+}
+.main-btn:disabled {
+opacity: 0.5;
+cursor: not-allowed;
+animation: none;
+}
+
+/* Share button */
+.share-btn {
+background: transparent;
+color: var(–text);
+font-family: ‘Noto Sans JP’, sans-serif;
+font-weight: 700;
+font-size: 0.85rem;
+border: 1px solid var(–border);
+cursor: pointer;
+padding: 0.75rem 1.5rem;
+width: 100%;
+max-width: 400px;
+transition: all 0.15s;
+letter-spacing: 0.03em;
+}
+.share-btn:hover {
+border-color: var(–yellow);
+color: var(–yellow);
+}
+
+/* Amazon link */
+.amazon-btn {
+display: block;
+background: #FF9900;
+color: #000;
+font-family: ‘Noto Sans JP’, sans-serif;
+font-weight: 700;
+padding: 1rem 1.5rem;
+text-decoration: none;
+text-align: center;
+font-size: 0.95rem;
+margin-top: 1rem;
+clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+transition: all 0.15s;
+max-width: 400px;
+}
+.amazon-btn:hover {
+background: #ffb733;
+transform: scale(1.02);
+}
+
+/* Gauge */
+.gauge-track {
+background: #111;
+border: 1px solid var(–border);
+height: 20px;
+position: relative;
+overflow: hidden;
+}
+.gauge-fill {
+height: 100%;
+transition: width 0.05s linear;
+position: relative;
+}
+.gauge-fill::after {
+content: ‘’;
+position: absolute;
+right: 0; top: 0; bottom: 0;
+width: 3px;
+background: rgba(255,255,255,0.8);
+animation: blink 0.3s infinite;
+}
+
+/* Result card */
+.result-card {
+animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes slideIn {
+from { opacity: 0; transform: translateY(20px); }
+to { opacity: 1; transform: translateY(0); }
+}
+
+/* Level badge */
+.lv-badge {
+font-family: ‘Share Tech Mono’, monospace;
+font-size: 0.75rem;
+padding: 2px 8px;
+letter-spacing: 0.1em;
+}
+
+/* Status line */
+.status-line {
+font-family: ‘Share Tech Mono’, monospace;
+font-size: 0.75rem;
+color: var(–muted);
+letter-spacing: 0.05em;
+}
+
+/* Measuring animation */
+.measuring-text {
+font-family: ‘Share Tech Mono’, monospace;
+font-size: 0.85rem;
+color: var(–yellow);
+letter-spacing: 0.1em;
+}
+
+/* Warning stripes header */
+.header-stripe {
+background: repeating-linear-gradient(
+90deg,
+var(–yellow) 0px,
+var(–yellow) 20px,
+#000 20px,
+#000 40px
+);
+height: 6px;
+}
+
+/* Mono font */
+.mono { font-family: ‘Share Tech Mono’, monospace; }
+
+/* Responsive */
+.container-main {
+max-width: 600px;
+margin: 0 auto;
+padding: 1rem;
+}
+
+/* Noise texture */
+@keyframes noise {
+0%, 100% { background-position: 0 0; }
+10% { background-position: -5% -10%; }
+30% { background-position: 3% 5%; }
+50% { background-position: -3% 3%; }
+70% { background-position: 0 -5%; }
+90% { background-position: 3% 0; }
+}
+
+.item-highlight {
+color: var(–yellow);
+font-weight: 900;
+}
+
+/* Lv colors */
+.lv1 { –lc: #4ade80; }
+.lv2 { –lc: #facc15; }
+.lv3 { –lc: #fb923c; }
+.lvmax { –lc: #f87171; }
+
+.lv-color { color: var(–lc); border-color: var(–lc); }
+</style>
+
+</head>
+<body>
+
+<!-- Header stripe -->
+
+<div class="header-stripe"></div>
+
+<div class="container-main py-6">
+
+  <!-- Logo / Title -->
+
+  <div class="text-center mb-8">
+    <div class="status-line mb-2">◆ EMERGENCY SUPPLY STATION ◆</div>
+    <h1 class="glitch text-3xl sm:text-4xl font-black mb-1 leading-tight" data-text="限界原稿メシガチャ" style="color: var(--yellow);">
+      限界原稿メシガチャ
+    </h1>
+    <div class="text-sm font-bold tracking-widest" style="color: var(--warn);">
+      ── 修羅場の配給所 ──
+    </div>
+    <p class="mt-3 text-xs" style="color: var(--muted);">
+      原稿で限界を迎えたすべての同人作家・オタクへ<br>
+      洗い物ゼロの配給物資を提供します
+    </p>
+  </div>
+
+  <!-- Status panel -->
+
+  <div class="hazard-border mb-6">
+    <div class="hazard-border-inner">
+      <div class="status-line mb-2">[ SYSTEM STATUS ]</div>
+      <div class="grid grid-cols-2 gap-3 text-xs mono mb-3" style="color: var(--muted);">
+        <div>DEADLINE: <span id="deadlineStatus" style="color: var(--danger);">CRITICAL</span></div>
+        <div>DISHES: <span style="color: #4ade80;">ZERO</span></div>
+        <div>CAFFEINE: <span style="color: var(--warn);">DEPLETED</span></div>
+        <div>WILLPOWER: <span style="color: var(--danger);">0.001%</span></div>
+      </div>
+      <div class="status-line mb-1">SURVIVAL GAUGE</div>
+      <div class="gauge-track">
+        <div id="bgGauge" class="gauge-fill" style="width: 15%; background: linear-gradient(90deg, #4ade80, #facc15);"></div>
+      </div>
+      <div class="flex justify-between mt-1 text-xs mono" style="color: var(--muted);">
+        <span>人間</span>
+        <span>瀕死</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Button -->
+
+  <div class="flex flex-col items-center gap-4 mb-8">
+    <button class="main-btn" id="gachaBtn" onclick="startGacha()">
+      ⚠ 限界度を測定して配給を受ける ⚠
+    </button>
+    <div class="status-line text-center text-xs">
+      ※ 配給物資は箱買い推奨です
+    </div>
+  </div>
+
+  <!-- Measuring area -->
+
+  <div id="measuringArea" class="hidden mb-6">
+    <div class="border p-4 text-center" style="border-color: var(--yellow);">
+      <div class="measuring-text mb-3" id="measuringText">SCANNING LIMIT LEVEL...</div>
+      <div class="gauge-track mb-1">
+        <div id="scanGauge" class="gauge-fill" style="width: 0%; background: var(--yellow);"></div>
+      </div>
+      <div class="measuring-text mt-2 text-xs" id="measuringDetail">生体反応を確認中</div>
+    </div>
+  </div>
+
+  <!-- Result area -->
+
+  <div id="resultArea" class="hidden result-card">
+
+```
+<!-- Level display -->
+<div class="mb-4 text-center">
+  <div class="inline-block lv-badge border text-xs mb-2 lv-color" id="lvLabel">Lv.1</div>
+  <div class="text-2xl font-black mb-1" id="lvTitle" style="color: var(--yellow);">まだ人間</div>
+  <div class="text-sm" id="lvSituation" style="color: var(--muted); line-height: 1.7;"></div>
+</div>
+
+<!-- Item panel -->
+<div class="hazard-border mb-4">
+  <div class="hazard-border-inner">
+    <div class="status-line mb-2">[ 本日の配給物資はこちらです（箱買い推奨） ]</div>
+    <div class="text-base font-bold mb-4 item-highlight" id="itemName"></div>
+    
+    <a href="#" id="amazonLink1" class="amazon-btn" target="_blank" rel="noopener">
+      📦 Amazonで配給を受け取る（案1）
+    </a>
+    <a href="#" id="amazonLink2" class="amazon-btn" target="_blank" rel="noopener">
+      📦 Amazonで配給を受け取る（案2）
+    </a>
+  </div>
+</div>
+
+<!-- Share button -->
+<div class="flex flex-col items-center gap-3">
+  <button class="share-btn" id="shareBtn" onclick="shareToX()">
+    🆘 現在の限界状況をXに報告（救援要請）する
+  </button>
+  <button class="share-btn" onclick="resetGacha()">
+    🔄 再測定する
+  </button>
+</div>
+```
+
+  </div>
+
+  <!-- Footer -->
+
+  <div class="mt-12 text-center">
+    <div class="status-line text-xs" style="color: var(--border);">
+      ── 頑張れ。完成させろ。 ──
+    </div>
+    <div class="text-xs mt-2" style="color: #333;">
+      ※ Amazonアソシエイトリンクを含みます
+    </div>
+  </div>
+
+</div>
+
+<script>
+const LEVELS = [
+  {
+    id: 'lv1',
+    label: 'Lv.1',
+    title: 'まだ人間',
+    colorClass: 'lv1',
+    situation: 'まだ味覚を楽しむ余裕があります。\n文明の利器（電子レンジ）を使いなさい。',
+    item: 'トレー付き冷凍食品セット',
+    keywords: ['冷凍パスタ トレー付き セット', '冷凍 チャーハン トレー付き'],
+    gaugeColor: '#4ade80',
+    gauge: '30%'
+  },
+  {
+    id: 'lv2',
+    label: 'Lv.2',
+    title: 'お湯が限界',
+    colorClass: 'lv2',
+    situation: '電子レンジの待ち時間すら惜しいですね。\nお湯を注いで3分耐えなさい。',
+    item: 'カップ麺・スープの箱買い',
+    keywords: ['カップ麺 箱買い', 'カップスープ 詰め合わせ'],
+    gaugeColor: '#facc15',
+    gauge: '60%'
+  },
+  {
+    id: 'lv3',
+    label: 'Lv.3',
+    title: '咀嚼の放棄',
+    colorClass: 'lv3',
+    situation: '噛む時間すら原稿に回したい極限状態。\nこれを飲んで生き延びなさい。',
+    item: 'ゼリー飲料・栄養調整食品',
+    keywords: ['inゼリー 箱買い', 'カロリーメイト ブロック 箱'],
+    gaugeColor: '#fb923c',
+    gauge: '80%'
+  },
+  {
+    id: 'lvmax',
+    label: 'Lv.MAX',
+    title: '生命維持装置',
+    colorClass: 'lvmax',
+    situation: '健康への罪悪感と栄養失調の狭間。\nこれ以上の無理は禁物です、完全食を摂取しなさい。',
+    item: '完全栄養食・野菜ジュース',
+    keywords: ['ベースブレッド', '野菜ジュース 紙パック 箱買い'],
+    gaugeColor: '#f87171',
+    gauge: '99%'
+  }
+];
+
+let currentLevel = null;
+
+const AFFILIATE_TAG = 'otaku093-22';
+
+function buildAmazonUrl(keyword) {
+  return `https://www.amazon.co.jp/s?k=${encodeURIComponent(keyword)}&tag=${AFFILIATE_TAG}`;
+}
+
+const scanTexts = [
+  'SCANNING LIMIT LEVEL...',
+  '原稿量を解析中...',
+  'カフェイン血中濃度を測定中...',
+  '最後の入浴日時を確認中...',
+  '徹夜回数をカウント中...',
+  '現実逃避指数を算出中...',
+  '配給物資を決定中...'
+];
+
+const scanDetails = [
+  '生体反応を確認中',
+  'Detecting caffeine level...',
+  '原稿進捗率: ???',
+  'Sleep deprivation: CRITICAL',
+  'Humanity remaining: calculating...',
+  'Survival mode: ACTIVATING',
+  'SUPPLY CONFIRMED'
+];
+
+function startGacha() {
+  const btn = document.getElementById('gachaBtn');
+  btn.disabled = true;
+
+  document.getElementById('resultArea').classList.add('hidden');
+  document.getElementById('measuringArea').classList.remove('hidden');
+
+  let step = 0;
+  let gaugeW = 0;
+  const totalSteps = 70;
+
+  const interval = setInterval(() => {
+    step++;
+    gaugeW = Math.min(100, (step / totalSteps) * 100);
+    document.getElementById('scanGauge').style.width = gaugeW + '%';
+
+    const textIdx = Math.floor((step / totalSteps) * scanTexts.length);
+    document.getElementById('measuringText').textContent = scanTexts[Math.min(textIdx, scanTexts.length - 1)];
+    document.getElementById('measuringDetail').textContent = scanDetails[Math.min(textIdx, scanDetails.length - 1)];
+
+    if (step >= totalSteps) {
+      clearInterval(interval);
+      showResult();
+    }
+  }, 40);
+}
+
+function showResult() {
+  const level = LEVELS[Math.floor(Math.random() * LEVELS.length)];
+  currentLevel = level;
+
+  document.getElementById('measuringArea').classList.add('hidden');
+
+  // Update level display
+  const lvLabel = document.getElementById('lvLabel');
+  lvLabel.textContent = level.label;
+  lvLabel.className = `inline-block lv-badge border text-xs mb-2 lv-color ${level.colorClass}`;
+
+  document.getElementById('lvTitle').textContent = `【${level.title}】`;
+  document.getElementById('lvSituation').textContent = level.situation;
+  document.getElementById('itemName').textContent = `► ${level.item}`;
+
+  // Amazon links
+  document.getElementById('amazonLink1').href = buildAmazonUrl(level.keywords[0]);
+  document.getElementById('amazonLink1').textContent = `📦 ${level.keywords[0]}`;
+  document.getElementById('amazonLink2').href = buildAmazonUrl(level.keywords[1]);
+  document.getElementById('amazonLink2').textContent = `📦 ${level.keywords[1]}`;
+
+  // Gauge
+  document.getElementById('bgGauge').style.width = level.gauge;
+  document.getElementById('bgGauge').style.background = `linear-gradient(90deg, #4ade80, ${level.gaugeColor})`;
+
+  const resultArea = document.getElementById('resultArea');
+  resultArea.classList.remove('hidden');
+  resultArea.style.animation = 'none';
+  void resultArea.offsetWidth;
+  resultArea.style.animation = 'slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+}
+
+function shareToX() {
+  if (!currentLevel) return;
+  const text = `私の限界レベルは【${currentLevel.label} ${currentLevel.title}】でした。配給物資は【${currentLevel.item}】です。 #限界原稿メシガチャ #修羅場`;
+  const url = window.location.href;
+  const twitterUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+  window.open(twitterUrl, '_blank');
+}
+
+function resetGacha() {
+  document.getElementById('resultArea').classList.add('hidden');
+  document.getElementById('gachaBtn').disabled = false;
+  currentLevel = null;
+  document.getElementById('scanGauge').style.width = '0%';
+  document.getElementById('bgGauge').style.width = '15%';
+  document.getElementById('bgGauge').style.background = 'linear-gradient(90deg, #4ade80, #facc15)';
+}
+
+// Animate background gauge randomly on load
+setInterval(() => {
+  const w = 10 + Math.random() * 20;
+  document.getElementById('bgGauge').style.width = w + '%';
+}, 3000);
+</script>
+
+</body>
+</html>
